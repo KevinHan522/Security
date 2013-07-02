@@ -1,0 +1,20 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 11.00
+# Visual C++ Express 2010
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Security", "Security\Security.vcxproj", "{73336930-9909-4E59-AFC5-50739FEC74DA}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Win32 = Debug|Win32
+		Release|Win32 = Release|Win32
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{73336930-9909-4E59-AFC5-50739FEC74DA}.Debug|Win32.ActiveCfg = Debug|Win32
+		{73336930-9909-4E59-AFC5-50739FEC74DA}.Debug|Win32.Build.0 = Debug|Win32
+		{73336930-9909-4E59-AFC5-50739FEC74DA}.Release|Win32.ActiveCfg = Release|Win32
+		{73336930-9909-4E59-AFC5-50739FEC74DA}.Release|Win32.Build.0 = Release|Win32
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+EndGlobal

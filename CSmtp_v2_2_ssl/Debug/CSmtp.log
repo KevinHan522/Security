@@ -1,17 +1,12 @@
-﻿Build started 7/9/2013 10:10:06 AM.
-     1>Project "C:\Users\Kevin\Internship Projects\CSmtp_v2_2_ssl\CSmtp.vcxproj" on node 2 (build target(s)).
+﻿Build started 7/9/2013 8:07:28 AM.
+     1>Project "C:\Users\Kevin\Documents\CSmtp_v2_2_ssl\CSmtp.vcxproj" on node 2 (build target(s)).
      1>InitializeBuildStatus:
          Creating ".\Debug\CSmtp.unsuccessfulbuild" because "AlwaysCreate" was specified.
        ClCompile:
-         C:\Program Files (x86)\Microsoft Visual Studio 10.0\VC\bin\CL.exe /c /I"openssl-0.9.8l\inc32" /ZI /nologo /W3 /WX- /Od /Oy- /D WIN32 /D _DEBUG /D _CONSOLE /D _VC80_UPGRADE=0x0600 /D _MBCS /Gm /EHsc /RTC1 /MTd /GS /fp:precise /Zc:wchar_t /Zc:forScope /Fo".\Debug/" /Fd".\Debug/vc100.pdb" /Gd /TP /analyze- /errorReport:prompt base64.cpp CSmtp.cpp main.cpp md5.cpp /D_CRT_SECURE_NO_WARNINGS 
-         md5.cpp
+         C:\Program Files (x86)\Microsoft Visual Studio 10.0\VC\bin\CL.exe /c /I"openssl-0.9.8l\inc32" /ZI /nologo /W3 /WX- /Od /Oy- /D WIN32 /D _DEBUG /D _CONSOLE /D _VC80_UPGRADE=0x0600 /D _MBCS /Gm /EHsc /RTC1 /MTd /GS /fp:precise /Zc:wchar_t /Zc:forScope /Fo".\Debug/" /Fd".\Debug/vc100.pdb" /Gd /TP /analyze- /errorReport:prompt main.cpp /D_CRT_SECURE_NO_WARNINGS 
          main.cpp
-         CSmtp.cpp
-         base64.cpp
-     1>c:\users\kevin\internship projects\csmtp_v2_2_ssl\base64.cpp : warning C4819: The file contains a character that cannot be represented in the current code page (932). Save the file in Unicode format to prevent data loss
-         Generating Code...
        ManifestResourceCompile:
-         C:\Program Files (x86)\Microsoft SDKs\Windows\v7.0A\bin\rc.exe /nologo /fo".\Debug\CSmtp.exe.embed.manifest.res" .\Debug\CSmtp_manifest.rc 
+         All outputs are up-to-date.
        Link:
          C:\Program Files (x86)\Microsoft Visual Studio 10.0\VC\bin\link.exe /ERRORREPORT:PROMPT /OUT:".\Debug/CSmtp.exe" /INCREMENTAL /NOLOGO /LIBPATH:"openssl-0.9.8l\out32" kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib /MANIFEST /ManifestFile:".\Debug\CSmtp.exe.intermediate.manifest" /MANIFESTUAC:"level='asInvoker' uiAccess='false'" /DEBUG /PDB:".\Debug/CSmtp.pdb" /SUBSYSTEM:CONSOLE /TLBID:1 /DYNAMICBASE /NXCOMPAT /IMPLIB:".\Debug\CSmtp.lib" /MACHINE:X86 .\Debug\CSmtp.exe.embed.manifest.res
          .\Debug/base64.obj
@@ -23,12 +18,12 @@
          All outputs are up-to-date.
        LinkEmbedManifest:
          All outputs are up-to-date.
-         CSmtp.vcxproj -> C:\Users\Kevin\Internship Projects\CSmtp_v2_2_ssl\.\Debug\CSmtp.exe
+         CSmtp.vcxproj -> C:\Users\Kevin\Documents\CSmtp_v2_2_ssl\.\Debug\CSmtp.exe
        FinalizeBuildStatus:
          Deleting file ".\Debug\CSmtp.unsuccessfulbuild".
          Touching ".\Debug\CSmtp.lastbuildstate".
-     1>Done Building Project "C:\Users\Kevin\Internship Projects\CSmtp_v2_2_ssl\CSmtp.vcxproj" (build target(s)).
+     1>Done Building Project "C:\Users\Kevin\Documents\CSmtp_v2_2_ssl\CSmtp.vcxproj" (build target(s)).
 
 Build succeeded.
 
-Time Elapsed 00:00:06.98
+Time Elapsed 00:00:04.96

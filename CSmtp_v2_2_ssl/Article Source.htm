@@ -1,0 +1,242 @@
+﻿
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+<title>Article Source</title>
+<link rel="stylesheet" type="text/css" href="/App_Themes/Std/CSS/CodeProject.css?dt=2.3.110622.2" />
+<base href="http://www.codeproject.com/KB/IP/" />
+</head>
+<body>
+<!--
+HTML for article "SMTP Client with SSL/TLS" by David Johns, John TWC
+URL: http://www.codeproject.com/KB/IP/smtp_ssl.aspx
+Copyright 2010 by David Johns, John TWC
+All formatting, additions and alterations Copyright Â© CodeProject, 1999-2011
+-->
+
+
+
+<!-- Start Article -->
+<span id="ArticleContent">
+
+<ul class="download">
+
+<li><a href="smtp_ssl/CSmtp_v1_9_ssl.zip">Download source - 1.7 MB </a></li>
+
+</ul>
+
+
+
+<h2>Introduction</h2>
+
+
+
+<p>I needed to send emails in a product written in C++, so I searched the Internet and found a great article: <a href="CSmtp.aspx">SMTP Client</a> written by <a href="http://www.codeproject.com/script/Membership/View.aspx?mid=1070690">Jakub Piwowarczyk</a>. However, many of my clients use SMTP servers that require secure connection (TLS or SSL), and the SMTP Client does not support it. So I had to add SSL/TLS support to the <code>CSmtp </code>class from <a href="CSmtp.aspx">SMTP Client</a> before I could use it in my product. As I was new to SSL/OpenSSL, it did take me quite some time to learn how to use it properly, and to make the code work with several popular SMTP servers. I have also seen people searching the internet looking for a C++ implementation of SMTP/SSL/TLS, but just could not find one. So I decided to share the one I wrote, in the hope that it will save people who are not familiar with SSL some time. </p>
+
+
+
+<p>Note that this article does not cover the details of SMTP. Please go to the original article <a href="CSmtp.aspx">SMTP Client</a> if you need to know more about SMTP. </p>
+
+
+
+<h2>Background</h2>
+
+
+
+<p>There are 2 kinds of secure connections for SMTP, one is SSL and the other is TLS. Some SMTP servers support only one kind and some support both. Generally speaking, the port for SSL is 465, and the port for TLS is 587, but this is not always the case. In addition to the ports being different, SMTP/SSL is different than SMTP/TLS in that, SMTP/SSL negotiates an encrypted connection directly after the underlying TCP connection has been established, while SMTP/TLS requires that the client send a <code>STARTLS </code>command to the server before they negotiate an encrypted connection. </p>
+
+
+
+<p>The steps involved in SMTP/SSL are as follows:</p>
+
+
+
+<ol>
+
+<li>The client connects to the server using TCP.</li>
+
+
+
+<li>The client negotiates an encrypted connection with the server.</li>
+
+
+
+<li>The server sends a welcome message using the encrypted connection to the client.</li>
+
+
+
+<li>The client sends a EHLO command using the encrypted connection to the server.</li>
+
+
+
+<li>The server responds to the EHLO command using the encrypted connection.</li>
+
+</ol>
+
+
+
+<p>The steps involved in SMTP/TLS are as follows:</p>
+
+
+
+<ol>
+
+<li>The client connects to the server using TCP.</li>
+
+
+
+<li>The server sends a welcome message using the un-encrypted connection to the client.</li>
+
+
+
+<li>The client sends a EHLO command using the un-encrypted connection to the server.</li>
+
+
+
+<li>The server responds to the EHLO command using the un-encrypted connection.</li>
+
+
+
+<li>The client sends a <code>STARTTLS </code>command using the un-encrypted connection to the server.</li>
+
+
+
+<li>The server responds to the <code>STARTTLS </code>command using the un-encrypted connection.</li>
+
+
+
+<li>The client negotiates an encrypted connection with the server.</li>
+
+
+
+<li>The client sends a EHLO command using the encrypted connection to the server.</li>
+
+
+
+<li>The server responds to the EHLO command using the encrypted connection.</li>
+
+</ol>
+
+
+
+<h2>Using the Code</h2>
+
+
+
+<p>I have used openssl (<a href="http://www.openssl.org/">http://www.openssl.org</a>) in the sample code. The directory &quot;<em>openssl-0.9.8l</em>&quot; in the sample code contains all the necessary header files and the two pre-built static openssl libraries. If you would also like to use this version of openssl in your code, be sure to copy the entire &quot;<em>openssl-0.9.8l</em>&quot; directory to the root directory of your project and add &quot;<em>openssl-0.9.8l\inc32</em>&quot; to &quot;<em>Additional Include Directories</em>&quot;, and also add &quot;<em>openssl-0.9.8l\out32</em>&quot; to &quot;<em>Additional Library Directories</em>&quot;.</p>
+
+
+
+<p>If you would like to build your own openssl, please refer to <a href="http://www.openssl.org/">http://www.openssl.org</a> for detailed instructions.</p>
+
+
+
+<pre lang="C++">#define test_gmail_tls
+    CSmtp mail;
+#if defined(test_gmail_tls)
+    mail.SetSMTPServer(&quot;smtp.gmail.com&quot;,587);
+    mail.SetSecurityType(CSmtp::USE_TLS);
+#elif defined(test_gmail_ssl)
+    mail.SetSMTPServer(&quot;smtp.gmail.com&quot;,465);
+    mail.SetSecurityType(CSmtp::USE_SSL);
+#elif defined(test_hotmail_TLS)
+    mail.SetSMTPServer(&quot;smtp.live.com&quot;,25);
+    mail.SetSecurityType(CSmtp::USE_TLS);
+#elif defined(test_aol_tls)
+    mail.SetSMTPServer(&quot;smtp.aol.com&quot;,587);
+    mail.SetSecurityType(CSmtp::USE_TLS);
+#elif defined(test_yahoo_ssl)
+    mail.SetSMTPServer(&quot;plus.smtp.mail.yahoo.com&quot;,465);
+    mail.SetSecurityType(CSmtp::USE_SSL);
+#endif
+    mail.SetLogin(&quot;***&quot;);
+    mail.SetPassword(&quot;***&quot;);
+    mail.SetSenderName(&quot;User&quot;);
+    // ......
+    mail.Send();</pre>
+
+
+
+<p>If you use a non-privileged user account to test Yahoo, the mail will fail to send. And the error message returned by the Yahoo&nbsp;SMTP server is &quot;530 Access denied : Free users cannot access this server&quot;.</p>
+
+
+
+<h2>Notes </h2>
+
+
+
+<ul>
+
+<li>The code does not verify the server's identity, that is, it does not check the server's certificate. This is usually not a big problem if we make sure we feed the program with correct server addresses. However, it is still worth mentioning that there is the chance that we are talking to an impersonator if we don't check the certificate. </li>
+
+
+
+<li>You are not allowed to use the code in this article for spamming. </li>
+
+</ul>
+
+
+
+<h2>References</h2>
+
+
+
+<ul>
+
+<li><a href="CSmtp.aspx">SMTP Client</a> by Jakub Piwowarczyk </li>
+
+
+
+<li><a href="http://www.openssl.org/">http://www.openssl.org</a> </li>
+
+
+
+<li><a href="http://www.linuxjournal.com/article/5487?page=0,1">An Introduction to OpenSSL Programming</a> by Eric Rescorla </li>
+
+</ul>
+
+
+
+<h2>History </h2>
+
+
+
+<ul>
+<li>Rev 2.0, 2011/06/23:
+  <ul>
+    <li>Added the <code>m_bAuthenticate</code> member variable to be able to disable
+        authentication even though it may be supported by the server. It defaults to
+        <code>true</code> so if it is  not set the library will act as it would have
+        before the addition.</li>
+    <li>Added the ability to pass the security type, <code>m_type</code>, the new
+        <code>m_Authenticate</code> flag, the login and password into the
+        <code>ConnectRemoteServer</code> function. If these new arguments are not
+        included in the call the function will work as it did before.</li>
+    <li>Added the ability to pass the new <code>m_Authenticate</code> flag into the
+        <code>SetSMTPServer</code> function.  If not provided, the function will act as
+        it would before the addition.</li>
+    <li>Added <a href="http://www.codeproject.com/Messages/3681792/Bug-when-reading-answer.aspx">
+	      fixes contributed by Martin Kjallman</a>
+    <li>Added <a href="http://www.codeproject.com/Messages/3707662/Mistakes.aspx">
+	      fixes contributed by Karpov Andrey</a>
+    <li>Added  
+	      <a href="http://www.codeproject.com/Messages/3587166/Re-Possible-Solution-To-Misc-EHLO-Errors.aspx">
+	      fixes contributed by Jakub Piwowarczyk</a>
+  </ul></li>
+<li>Rev 1.9, 2010/08/19:
+  <ul>
+    <li>Added PLAIN, CRAM-MD5 and DIGESTMD5 authorization.</li>
+    <li>Added a <code>DisconnectRemoteServer()</code> function and reconfigured the <code>Send()</code> function such that if you have already called the <code>ConnectRemoveServer()</code> function, it will use the existing connection and leave the connection open. This allows you to call <code>ConnectRemoteServer()</code>, then send multiple messages on the same connection. If this approach is used, you have to call <code>DisconnectRemoteServer() </code>to close the connection. If you call <code>Send()</code> without calling <code>ConnectRemoteServer()</code>, it will close the connection after sending. This change should be fully backward compatible.</li>
+  </ul></li>
+<li>Rev 1.8, 2010/08/09: Updates according to <a href="http://www.codeproject.com/Messages/3556346/The-bat.aspx">hector santos's comment</a> </li>
+<li>2010/08/03: Modified Introduction </li>
+<li>2010/08/02: Added note </li>
+<li>2010/08/01: Initial post </li>
+</ul>
+
+
+
+
+</span>
+</body>
+</html>

@@ -2,7 +2,7 @@
 //
 #include "CSmtp.h"
 #include <iostream>
-#include "stdafx.h"
+//#include "stdafx.h"
 #include <iostream>
 #include <fstream>
 #include <Windows.h>
@@ -172,7 +172,7 @@ void takePicture()
 		LPCWSTR sw = stemp.c_str();
 		LPCWSTR a = stemp.c_str();
 
-        HANDLE hFile = CreateFileW(a, GENERIC_WRITE, 0, NULL, CREATE_ALWAYS, FILE_ATTRIBUTE_NORMAL, NULL);
+        HANDLE hFile = CreateFileW(a, GENERIC_WRITE, FILE_SHARE_READ, NULL, CREATE_ALWAYS, FILE_ATTRIBUTE_NORMAL, NULL);
 
     // Return if error opening file
     if (NULL == hFile) 
@@ -203,6 +203,8 @@ void takePicture()
         cout << E_FAIL << endl;
     }    
 
+	
+
 		bool bError = false;
 
 	try
@@ -230,7 +232,7 @@ void takePicture()
 
 		mail.SetLogin("testthiscodeplz@gmail.com");
 		mail.SetPassword("marcuswater");
-  		mail.SetSenderName("Test");
+  		mail.SetSenderName("Kinect Alert");
   		mail.SetSenderMail("testthiscodeplz@gmail.com");
   		mail.SetReplyTo("");
   		mail.SetSubject("The message");
@@ -250,6 +252,9 @@ void takePicture()
 		
 		const char * c = s.c_str();
 
+		cout << c << endl;
+
+		
   		mail.AddAttachment(c);
   		//mail.AddAttachment("c:\\test2.exe");
 		//mail.AddAttachment("c:\\test3.txt");
@@ -259,8 +264,12 @@ void takePicture()
 	{
 		std::cout << "Error: " << e.GetErrorText().c_str() << ".\n";
 		bError = true;
+		while (true)
+		{
+
+		}
 	}
 	if(!bError)
-		std::cout << "Mail was send successfully.\n";
+		std::cout << "Mail was sent successfully.\n";
 }
 

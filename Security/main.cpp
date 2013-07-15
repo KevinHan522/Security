@@ -10,8 +10,11 @@
 #include <sstream>
 using namespace std;
 
+//method that takes a picture and e-mails it
 void takePicture();
+//method to get a lockedRectangle that holds all the values needed for color capture
 NUI_LOCKED_RECT getLockedRect();
+
 
 INuiSensor * sensor;
 HANDLE han2(INVALID_HANDLE_VALUE);
@@ -25,7 +28,7 @@ int main()
 	{
 		cout << "ASfdsfLD" << endl;
 	}
-	sensor->NuiCameraElevationSetAngle(-1);
+	sensor->NuiCameraElevationSetAngle(2);
 
 	NUI_SKELETON_FRAME skelFrame;
 	//NUI_IMAGE_FRAME imgFrame;
@@ -72,7 +75,7 @@ int main()
 		//cout << sum << endl;
 		if (temp != 0)
 		{
-			if (abs(sum-temp) >= 100000) noPersonDetected = false;
+			if (abs(sum-temp) >= 2000000) noPersonDetected = false;
 			cout << sum - temp << endl;
 		}
 		temp = sum;
@@ -91,6 +94,10 @@ int main()
 		*/
 	}
 	
+	for (int kl = 0; kl <= 1000000; kl++)
+	{
+	}
+
 	takePicture();
 
 
@@ -235,7 +242,7 @@ void takePicture()
   		mail.SetSenderName("Kinect Alert");
   		mail.SetSenderMail("testthiscodeplz@gmail.com");
   		mail.SetReplyTo("");
-  		mail.SetSubject("The message");
+  		mail.SetSubject("Movement Detected");
   		mail.AddRecipient("Kevintasta@gmail.com");
   		mail.SetXPriority(XPRIORITY_NORMAL);
   		mail.SetXMailer("The Bat! (v3.02) Professional");
@@ -243,11 +250,11 @@ void takePicture()
 		mail.AddMsgLine("");
 		mail.AddMsgLine("...");
 		mail.AddMsgLine("Someone has been trying to steal your things.");
-		mail.AddMsgLine("A picture is attached for your conveniance.");
+		mail.AddMsgLine("A picture has been attached for your convenience.");
 		mail.AddMsgLine("Regards");
 		mail.ModMsgLine(5,"regards");
 		mail.DelMsgLine(2);
-		mail.AddMsgLine("WHALE Security system.");
+		mail.AddMsgLine("Kinect Security System.");
 
 		
 		const char * c = s.c_str();

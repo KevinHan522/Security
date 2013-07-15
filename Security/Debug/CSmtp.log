@@ -1,5 +1,5 @@
-﻿Build started 7/9/2013 12:49:06 PM.
-     1>Project "C:\Users\Kevin\Internship Projects\CSmtp_v2_2_ssl\CSmtp.vcxproj" on node 2 (build target(s)).
+﻿Build started 7/10/2013 11:45:14 AM.
+     1>Project "C:\Users\Kevin\Internship Projects\Security\Security\CSmtp.vcxproj" on node 2 (build target(s)).
      1>InitializeBuildStatus:
          Creating ".\Debug\CSmtp.unsuccessfulbuild" because "AlwaysCreate" was specified.
        ClCompile:
@@ -18,12 +18,12 @@
          All outputs are up-to-date.
        LinkEmbedManifest:
          All outputs are up-to-date.
-         CSmtp.vcxproj -> C:\Users\Kevin\Internship Projects\CSmtp_v2_2_ssl\.\Debug\CSmtp.exe
+         CSmtp.vcxproj -> C:\Users\Kevin\Internship Projects\Security\Security\.\Debug\CSmtp.exe
        FinalizeBuildStatus:
          Deleting file ".\Debug\CSmtp.unsuccessfulbuild".
          Touching ".\Debug\CSmtp.lastbuildstate".
-     1>Done Building Project "C:\Users\Kevin\Internship Projects\CSmtp_v2_2_ssl\CSmtp.vcxproj" (build target(s)).
+     1>Done Building Project "C:\Users\Kevin\Internship Projects\Security\Security\CSmtp.vcxproj" (build target(s)).
 
 Build succeeded.
 
-Time Elapsed 00:00:07.40
+Time Elapsed 00:00:02.22

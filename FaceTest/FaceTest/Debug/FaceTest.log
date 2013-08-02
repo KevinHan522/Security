@@ -1,25 +1,24 @@
-﻿Build started 7/23/2013 1:31:43 PM.
+﻿Build started 8/1/2013 12:17:54 PM.
      1>Project "C:\Users\Kevin\Documents\Visual Studio 2010\Projects\FaceTest\FaceTest\FaceTest.vcxproj" on node 2 (build target(s)).
      1>InitializeBuildStatus:
-         Touching "Debug\FaceTest.unsuccessfulbuild".
+         Creating "Debug\FaceTest.unsuccessfulbuild" because "AlwaysCreate" was specified.
        ClCompile:
-         C:\Program Files (x86)\Microsoft Visual Studio 10.0\VC\bin\CL.exe /c /I"C:\Program Files\Microsoft SDKs\Kinect\Developer Toolkit v1.7.0\inc" /I"C:\Program Files\Microsoft SDKs\Kinect\v1.7\inc" /ZI /nologo /W3 /WX- /Od /Oy- /D WIN32 /D _DEBUG /D _CONSOLE /D _UNICODE /D UNICODE /Gm /EHsc /RTC1 /MDd /GS /fp:precise /Zc:wchar_t /Zc:forScope /Fo"Debug\\" /Fd"Debug\vc100.pdb" /Gd /TP /analyze- /errorReport:prompt FaceTest.cpp
+         C:\Program Files (x86)\Microsoft Visual Studio 10.0\VC\bin\CL.exe /c /I"C:\Program Files\Microsoft SDKs\Kinect\Developer Toolkit v1.7.0\inc" /I"C:\Program Files\Microsoft SDKs\Kinect\v1.7\inc" /I"C:\Users\Kevin\Documents\Visual Studio 2010\Projects\FaceTest\FaceTest\openssl-0.9.8l\inc32" /ZI /nologo /W3 /WX- /Od /Oy- /D WIN32 /D _DEBUG /D _CONSOLE /D _UNICODE /D UNICODE /Gm /EHsc /RTC1 /MDd /GS /fp:precise /Zc:wchar_t /Zc:forScope /Fo"Debug\\" /Fd"Debug\vc100.pdb" /Gd /TP /analyze- /errorReport:prompt FaceTest.cpp
          FaceTest.cpp
-     1>c:\users\kevin\documents\visual studio 2010\projects\facetest\facetest\facetest.cpp(494): warning C4305: '=' : truncation from 'int' to 'byte'
-     1>c:\users\kevin\documents\visual studio 2010\projects\facetest\facetest\facetest.cpp(494): warning C4309: '=' : truncation of constant value
-     1>c:\users\kevin\documents\visual studio 2010\projects\facetest\facetest\facetest.cpp(502): warning C4305: '=' : truncation from 'int' to 'byte'
-     1>c:\users\kevin\documents\visual studio 2010\projects\facetest\facetest\facetest.cpp(502): warning C4309: '=' : truncation of constant value
-     1>c:\users\kevin\documents\visual studio 2010\projects\facetest\facetest\facetest.cpp(513): warning C4305: '=' : truncation from 'int' to 'byte'
-     1>c:\users\kevin\documents\visual studio 2010\projects\facetest\facetest\facetest.cpp(513): warning C4309: '=' : truncation of constant value
-     1>c:\users\kevin\documents\visual studio 2010\projects\facetest\facetest\facetest.cpp(523): warning C4305: '=' : truncation from 'int' to 'byte'
-     1>c:\users\kevin\documents\visual studio 2010\projects\facetest\facetest\facetest.cpp(523): warning C4309: '=' : truncation of constant value
-     1>c:\users\kevin\documents\visual studio 2010\projects\facetest\facetest\facetest.cpp(544): warning C4018: '<' : signed/unsigned mismatch
-     1>c:\users\kevin\documents\visual studio 2010\projects\facetest\facetest\facetest.cpp(546): warning C4018: '<' : signed/unsigned mismatch
+     1>c:\users\kevin\documents\visual studio 2010\projects\facetest\facetest\facetest.cpp(486): warning C4018: '<' : signed/unsigned mismatch
+     1>c:\users\kevin\documents\visual studio 2010\projects\facetest\facetest\facetest.cpp(501): warning C4018: '<' : signed/unsigned mismatch
+     1>c:\users\kevin\documents\visual studio 2010\projects\facetest\facetest\facetest.cpp(552): warning C4018: '<' : signed/unsigned mismatch
+     1>c:\users\kevin\documents\visual studio 2010\projects\facetest\facetest\facetest.cpp(588): warning C4018: '<' : signed/unsigned mismatch
+     1>c:\users\kevin\documents\visual studio 2010\projects\facetest\facetest\facetest.cpp(688): warning C4018: '<' : signed/unsigned mismatch
+     1>c:\users\kevin\documents\visual studio 2010\projects\facetest\facetest\facetest.cpp(694): warning C4018: '<' : signed/unsigned mismatch
        ManifestResourceCompile:
          All outputs are up-to-date.
        Link:
-         C:\Program Files (x86)\Microsoft Visual Studio 10.0\VC\bin\link.exe /ERRORREPORT:PROMPT /OUT:"C:\Users\Kevin\Documents\Visual Studio 2010\Projects\FaceTest\Debug\FaceTest.exe" /INCREMENTAL /NOLOGO /LIBPATH:"C:\Program Files\Microsoft SDKs\Kinect\v1.7\lib\x86" /LIBPATH:"C:\Program Files\Microsoft SDKs\Kinect\Developer Toolkit v1.7.0\Lib\x86" "C:\Program Files\Microsoft SDKs\Kinect\v1.7\lib\x86\Kinect10.lib" "C:\Program Files\Microsoft SDKs\Kinect\Developer Toolkit v1.7.0\Lib\x86\FaceTrackLib.lib" kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib /MANIFEST /ManifestFile:"Debug\FaceTest.exe.intermediate.manifest" /MANIFESTUAC:"level='asInvoker' uiAccess='false'" /DEBUG /PDB:"C:\Users\Kevin\Documents\Visual Studio 2010\Projects\FaceTest\Debug\FaceTest.pdb" /SUBSYSTEM:CONSOLE /TLBID:1 /DYNAMICBASE /NXCOMPAT /IMPLIB:"C:\Users\Kevin\Documents\Visual Studio 2010\Projects\FaceTest\Debug\FaceTest.lib" /MACHINE:X86 Debug\FaceTest.exe.embed.manifest.res
+         C:\Program Files (x86)\Microsoft Visual Studio 10.0\VC\bin\link.exe /ERRORREPORT:PROMPT /OUT:"C:\Users\Kevin\Documents\Visual Studio 2010\Projects\FaceTest\Debug\FaceTest.exe" /INCREMENTAL /NOLOGO /LIBPATH:"C:\Users\Kevin\Documents\Visual Studio 2010\Projects\FaceTest\FaceTest\openssl-0.9.8l\out32" /LIBPATH:"C:\Program Files\Microsoft SDKs\Kinect\v1.7\lib\x86" /LIBPATH:"C:\Program Files\Microsoft SDKs\Kinect\Developer Toolkit v1.7.0\Lib\x86" "C:\Program Files\Microsoft SDKs\Kinect\v1.7\lib\x86\Kinect10.lib" "C:\Program Files\Microsoft SDKs\Kinect\Developer Toolkit v1.7.0\Lib\x86\FaceTrackLib.lib" kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib /MANIFEST /ManifestFile:"Debug\FaceTest.exe.intermediate.manifest" /MANIFESTUAC:"level='asInvoker' uiAccess='false'" /DEBUG /PDB:"C:\Users\Kevin\Documents\Visual Studio 2010\Projects\FaceTest\Debug\FaceTest.pdb" /SUBSYSTEM:CONSOLE /TLBID:1 /DYNAMICBASE /NXCOMPAT /IMPLIB:"C:\Users\Kevin\Documents\Visual Studio 2010\Projects\FaceTest\Debug\FaceTest.lib" /MACHINE:X86 Debug\FaceTest.exe.embed.manifest.res
+         Debug\base64.obj
+         Debug\CSmtp.obj
          Debug\FaceTest.obj
+         Debug\md5.obj
          Debug\stdafx.obj
        Manifest:
          C:\Program Files (x86)\Microsoft SDKs\Windows\v7.0A\bin\mt.exe /nologo /verbose /out:"Debug\FaceTest.exe.embed.manifest" /manifest Debug\FaceTest.exe.intermediate.manifest
@@ -34,4 +33,4 @@
 
 Build succeeded.
 
-Time Elapsed 00:00:26.73
+Time Elapsed 00:00:06.60

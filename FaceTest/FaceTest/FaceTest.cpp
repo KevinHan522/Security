@@ -1,24 +1,25 @@
 // Security.cpp : Defines the entry point for the console application.
 //
-
+#include "CSmtp.h"
 #include <iostream>
 //#include "stdafx.h"
-#include <iostream>
-#include <fstream>
+//#include <fstream>
 #include <Windows.h>
 #include <NuiApi.h>
 #include <sstream>
 #include <vector>
 #include <algorithm>
 #include "FaceTrackLib.h"
+
 using namespace std;
 
 
-vector<vector<int>> getClusters(bool * arr);
-void populateClust(vector<int> cls, bool * ar, int seed);
+vector<vector<int>> getClusters(vector<bool> arr);
+//void populateClust(vector<int> cls, bool * ar, int seed);
 //method that takes a picture and e-mails it
 void takePicture(FT_WEIGHTED_RECT);
 void takePicture(byte * pBits, string str);
+void sendPicture(string filename);
 //method to get a lockedRectangle that holds all the values needed for color capture
 NUI_LOCKED_RECT getLockedRect();
 void processColor();
@@ -31,11 +32,36 @@ HANDLE depthHandle(INVALID_HANDLE_VALUE);
 IFTImage* pColorFrame;
 IFTImage* pDepthFrame;
 FT_WEIGHTED_RECT *pFaces = new FT_WEIGHTED_RECT[1];
-double * arrfirst = new double[640*480*4];
-double * arrlast = new double[640*480*4];
-int * arrfst = new int[640*480*4];
-int * arrlst = new int[640*480*4];
-bool * arrdiff = new bool[640*480*4];
+
+struct Rect {
+int top;
+int bot;
+int left;
+int right;
+};
+
+vector<double> arrfirst;
+
+vector<int> arrfst;
+vector<int> arrlst;
+vector<bool> arrdiff;
+vector<Rect> arrrect;
+
+
+
+
+Rect getRectangle(vector<int> cluster);
+
+int resWidth;
+int resHeight;
+
+/*
+double arrfirst[resWidth*resHeight*4];
+double arrlast[resWidth*resHeight*4];
+int arrfst[resWidth*resHeight*4];
+int arrlst[resWidth*resHeight*4];
+bool arrdiff[resWidth*resHeight];
+*/
 
 int main()
 {
@@ -55,6 +81,9 @@ int main()
 	HANDLE color = CreateEvent( NULL, TRUE, FALSE, NULL );
 	HANDLE depth = CreateEvent( NULL, TRUE, FALSE, NULL );
 
+
+	resWidth = 640;
+	resHeight = 480;
 	//Opens image stream for color sensing
 	hrt = sensor->NuiImageStreamOpen(NUI_IMAGE_TYPE_COLOR, NUI_IMAGE_RESOLUTION_640x480,0,2,color,&colorHandle);
 	if (FAILED(hrt))
@@ -76,16 +105,67 @@ int main()
 	bool noMovementDetected = true;
 	NUI_LOCKED_RECT rect1;
 	NUI_LOCKED_RECT rect2 = getLockedRect();
-	int * array1 = new int[640*480*4];
-	int * array2 = new int [640*480*4];
+	int * array1 = new int[resWidth*resHeight*4];
+	int * array2 = new int[resWidth*resHeight*4];
+
+	arrfirst.resize(resWidth*resHeight*4);
+	arrfst.resize(resWidth*resHeight*4);
+	arrlst.resize(resWidth*resHeight*4);
+	arrdiff.resize(resWidth*resHeight);
+	//array1.resize(resWidth*resHeight*4);
+	//array2.resize(resWidth*resHeight*4);
 
 
 	int difsum ;
+	int defControl;
 	bool isFirst = true;
+
+	IFTFaceTracker* pFT = FTCreateFaceTracker();
+  if(!pFT)
+  {
+    // Handle errors
+  }
+
+  FT_CAMERA_CONFIG myColorCameraConfig = {resWidth, resHeight, NUI_CAMERA_COLOR_NOMINAL_FOCAL_LENGTH_IN_PIXELS}; // width, height, focal length
+  FT_CAMERA_CONFIG myDepthCameraConfig = {320, 240, NUI_CAMERA_DEPTH_NOMINAL_FOCAL_LENGTH_IN_PIXELS}; // width, height
+
+  HRESULT hr = pFT->Initialize(&myColorCameraConfig, &myDepthCameraConfig, NULL, NULL);
+  if( FAILED(hr) )
+  {
+    cout << "Failed to initialize face detection shiz" << endl;
+  }
+
+  // Create IFTResult to hold a face tracking result
+  IFTResult* pFTResult = NULL;
+  hr = pFT->CreateFTResult(&pFTResult);
+  if(FAILED(hr))
+  {
+    cout << "Failed to create result shiz" << endl;
+  }
+
+  // prepare Image and SensorData for resWidthxresHeight RGB images
+  pColorFrame = FTCreateImage();
+  if(!pColorFrame)
+  {
+    cout << "Color frame failed" << endl;
+  }
+  pDepthFrame = FTCreateImage();
+  if (!pDepthFrame)
+  {
+	  cout << "Depth frame failed" << endl;
+  }
+
+  // Attach assumes that the camera code provided by the application
+  // is filling the buffer cameraFrameBuffer
+  pColorFrame->Allocate(resWidth, resHeight,  FTIMAGEFORMAT_UINT8_B8G8R8X8);
+  pDepthFrame->Allocate(320,240,  FTIMAGEFORMAT_UINT16_D13P3);
+  FT_SENSOR_DATA sensorData;
 
 	while (true)
 	{
 		difsum = 0;
+		defControl = 5;
+		arrrect.clear();
 	while (noMovementDetected)
 	
 	{
@@ -93,45 +173,49 @@ int main()
 
 		rect1 = getLockedRect();
 
-		for(int kl = 0; kl < 640*480*4; kl++)
+		for(int kl = 0; kl < resWidth*resHeight*4; kl++)
 		{
 			array1[kl] = rect1.pBits[kl];
 
 		}
 		rect2 = getLockedRect();
-		for(int kl = 0; kl < 640*480*4; kl++)
+		for(int kl = 0; kl < resWidth*resHeight*4; kl++)
 		{
 			array2[kl] = rect2.pBits[kl];
 
 		}
 			
 		
-		for(int i = 0; i < 640*480*4;i++)
+		for(int i = 0; i < resWidth*resHeight*4;i++)
 		{
 			difsum += abs(array1[i]-array2[i]);
 		}
 		cout << difsum << endl;
-		if ((difsum >= 3000000 && !(isFirst))||(skelFrame.SkeletonData[0].eTrackingState == NUI_SKELETON_TRACKED||skelFrame.SkeletonData[1].eTrackingState == NUI_SKELETON_TRACKED||skelFrame.SkeletonData[2].eTrackingState == NUI_SKELETON_TRACKED||skelFrame.SkeletonData[3].eTrackingState == NUI_SKELETON_TRACKED||skelFrame.SkeletonData[4].eTrackingState == NUI_SKELETON_TRACKED||skelFrame.SkeletonData[5].eTrackingState == NUI_SKELETON_TRACKED))
+		if ((difsum >= 2600000 && !(isFirst))||(skelFrame.SkeletonData[0].eTrackingState == NUI_SKELETON_TRACKED||skelFrame.SkeletonData[1].eTrackingState == NUI_SKELETON_TRACKED||skelFrame.SkeletonData[2].eTrackingState == NUI_SKELETON_TRACKED||skelFrame.SkeletonData[3].eTrackingState == NUI_SKELETON_TRACKED||skelFrame.SkeletonData[4].eTrackingState == NUI_SKELETON_TRACKED||skelFrame.SkeletonData[5].eTrackingState == NUI_SKELETON_TRACKED))
 		{
 			noMovementDetected = false;
 			takePicture(rect2.pBits,"first");
 		}
-		else if (difsum <= 2500000)
+		else if (difsum <= 2400000)
 		{
-
-			for (int b=0;b<640*480*4;b+=4)
+			if (defControl >=5)
 			{
+				for (int b=0;b<resWidth*resHeight*4;b+=4)
+				{
 
-				arrfirst[b] = (array1[b]*3)/4;
-				arrfirst[b+1] = array1[b+1]/2;
-				arrfirst[b+2] = (array1[b+2]/4);
-				arrfirst[b+3] = array1[b+3];
-				arrfst[b] = array1[b];
-				arrfst[b+1] = array1[b+1];
-				arrfst[b+2] = array1[b+2];
-				arrfst[b+3] = array1[b+3];
+					arrfirst[b] = (array1[b]*3.0)/4.0;
+					arrfirst[b+1] = array1[b+1]/2.0;
+					arrfirst[b+2] = (array1[b+2]/4.0);
+					arrfirst[b+3] = array1[b+3]/2.0;
+					arrfst[b] = array1[b];
+					arrfst[b+1] = array1[b+1];
+					arrfst[b+2] = array1[b+2];
+					arrfst[b+3] = array1[b+3];
 
+				}
+				defControl=0;
 			}
+			defControl++;
 		}
 
 
@@ -161,46 +245,7 @@ int main()
   // cameraObj.ProcessIO(cameraFrameBuffer)
 
   // Create an instance of face tracker
-  IFTFaceTracker* pFT = FTCreateFaceTracker();
-  if(!pFT)
-  {
-    // Handle errors
-  }
-
-  FT_CAMERA_CONFIG myColorCameraConfig = {640, 480, NUI_CAMERA_COLOR_NOMINAL_FOCAL_LENGTH_IN_PIXELS}; // width, height, focal length
-  FT_CAMERA_CONFIG myDepthCameraConfig = {320, 240, NUI_CAMERA_DEPTH_NOMINAL_FOCAL_LENGTH_IN_PIXELS}; // width, height
-
-  HRESULT hr = pFT->Initialize(&myColorCameraConfig, &myDepthCameraConfig, NULL, NULL);
-  if( FAILED(hr) )
-  {
-    cout << "Failed to initialize face detection shiz" << endl;
-  }
-
-  // Create IFTResult to hold a face tracking result
-  IFTResult* pFTResult = NULL;
-  hr = pFT->CreateFTResult(&pFTResult);
-  if(FAILED(hr))
-  {
-    cout << "Failed to create result shiz" << endl;
-  }
-
-  // prepare Image and SensorData for 640x480 RGB images
-  pColorFrame = FTCreateImage();
-  if(!pColorFrame)
-  {
-    cout << "Color frame failed" << endl;
-  }
-  pDepthFrame = FTCreateImage();
-  if (!pDepthFrame)
-  {
-	  cout << "Depth frame failed" << endl;
-  }
-
-  // Attach assumes that the camera code provided by the application
-  // is filling the buffer cameraFrameBuffer
-  pColorFrame->Allocate(640, 480,  FTIMAGEFORMAT_UINT8_B8G8R8X8);
-  pDepthFrame->Allocate(320,240,  FTIMAGEFORMAT_UINT16_D13P3);
-  FT_SENSOR_DATA sensorData;
+  
   sensorData.pVideoFrame = pColorFrame;
   sensorData.pDepthFrame = pDepthFrame;
   sensorData.ZoomFactor = 1.0f;
@@ -229,9 +274,9 @@ int main()
 				}
 				else
 				{
-					if (pFaces->Weight >= 1 && pFaces->Weight != prevWeight)
+					if (pFaces->Weight >= 4 && pFaces->Weight != prevWeight)
 					{
-					takePicture(*pFaces);
+						takePicture(*pFaces);
 					}
 					prevWeight = pFaces->Weight;
 				}
@@ -243,13 +288,13 @@ int main()
 		}
 		rect1 = getLockedRect();
 
-		for(int kl = 0; kl < 640*480*4; kl++)
+		for(int kl = 0; kl < resWidth*resHeight*4; kl++)
 		{
 			array1[kl] = rect1.pBits[kl];
 
 		}
 		rect2 = getLockedRect();
-		for(int kl = 0; kl < 640*480*4; kl++)
+		for(int kl = 0; kl < resWidth*resHeight*4; kl++)
 		{
 			array2[kl] = rect2.pBits[kl];
 
@@ -257,50 +302,44 @@ int main()
 			
 
 		int i;
-		for(i = 0; i < 640*480*4;i++)
+		for(i = 0; i < resWidth*resHeight*4;i++)
 		{
 			difsum += abs(array1[i]-array2[i]);
 		}
 		cout << "Motion Detected! " << difsum << endl;
-		if (difsum <= 2500000)
+		if (difsum <= 2400000)
 		{
 			stopCounter++;
 			
 		}
-		else if (difsum >= 300000)
+		else if (difsum >= 2400000 && stopCounter >= -30)
 		{
-			stopCounter--;
+			int amnt = ((difsum-2400000)/100000);
+			if (amnt >= 15) amnt = 15;
+			stopCounter-= amnt;
 		}
-		if (stopCounter >= 25)
+		if (stopCounter >= 50)
 		{
 			noMovementDetected = true;
 			rect1 = getLockedRect();
-			for(int kl = 0; kl < 640*480*4; kl+=4)
+			takePicture(rect1.pBits, "last");
+			byte * bits = new byte[resWidth*resHeight*4];
+			for(int kl = 0; kl < resWidth*resHeight*4; kl+=4)
 			{
-
-				
-				//for blue
-				//if (kl%4==0)
-				//{
-				//	arrfirst[kl]+=50;
-				//}
-				//for green
-				//if (kl%4==1)
-				//{
-				//	arrfirst[kl]+=50;
-				//}
-				
-				arrlast[kl] = rect1.pBits[kl]/4;
-				arrlast[kl+1] = rect1.pBits[kl+1]/2;
-				arrlast[kl+2] = (rect1.pBits[kl+2]*3)/4;
-				arrlast[kl+3] = rect1.pBits[kl+3];
+	
+				bits[kl] = (int) (rect1.pBits[kl]/4.0 + arrfirst[kl]);
+				bits[kl+1] = (int) (rect1.pBits[kl+1]/2.0 + arrfirst[kl+1]);
+				bits[kl+2] = (int) ((rect1.pBits[kl+2]*3.0)/4 + arrfirst[kl+2]);
+				bits[kl+3] = (int) (rect1.pBits[kl+3]/2.0 + arrfirst[kl+3]);
 				arrlst[kl] = rect1.pBits[kl];
-				arrlst[kl+1] = arrlst[kl+1];
-				arrlst[kl+2] = arrlst[kl+2];
-				arrlst[kl+3] = arrlst[kl+3];
+				arrlst[kl+1] = rect1.pBits[kl+1];
+				arrlst[kl+2] = rect1.pBits[kl+2];
+				arrlst[kl+3] = rect1.pBits[kl+3];
+
 			}
-			takePicture(rect1.pBits,"last");
-			
+			takePicture(bits, "noRect");
+			takePicture(bits,"final");
+			delete bits;			
 		}
 		difsum = 0;
 	  	counter++;
@@ -314,12 +353,7 @@ int main()
   pDepthFrame->Release();
   pFT->Release();
   */
-  cout << "Send e-mail here possibly to inform owner" << endl;
-  cout << "Send e-mail here possibly to inform owner" << endl;
-  cout << "Send e-mail here possibly to inform owner" << endl;
-  cout << "Send e-mail here possibly to inform owner" << endl;
-  cout << "Send e-mail here possibly to inform owner" << endl;
-  cout << "Send e-mail here possibly to inform owner" << endl;
+  
 
   }
 	
@@ -345,7 +379,7 @@ void processColor()
 				}
 				else
 				{
-
+				
 					frameNull = false;
 				}
 			}
@@ -428,58 +462,158 @@ NUI_LOCKED_RECT getLockedRect()
 
 //return cluster array
 
-vector<vector<int>> getClusters(bool* arr)
+vector<vector<int>> getClusters(vector<bool> arr)
 {
 	vector<vector<int>> clustArr;
 	//bool isFound = false;
+	bool isMerged = false;
+	int clusToMerge;
 
-	for(int a = 0; a<(640*480);a++)
+	for(int a = 0; a<(resWidth*resHeight);a++)
 	{
+		isMerged = false;
+		clusToMerge = -1;
+		if (a%10000==0) cout << "Working... " << a << endl;
 		//is the point a possible cluster?
 		if (arr[a])
 		{
-			//has the point been added already?
-			/*
-			for(int b = 0; b < clustArr.size();b++)
-			{
-
-					if (std::find(clustArr[b].begin(), clustArr[b].end(), a)!=clustArr[b].end())
-					{
-						isFound = true;
-						break;
-					}
-
-			}
-			if (!isFound)
-			{
-				*/
-				//start a new cluster
-				vector<int> clust;
-				populateClust(clust,arr,a);
+			//cout << "Current array size:" << clustArr.size() << endl;
+			
 				
-				//is the cluster large enough?
-				if (clust.size()>= 10)
+				//are there already defined clusters around it? If so, add it to cluster
+				if (a>0 && arr[a-1])
 				{
-				clustArr.push_back(clust);
+					for(int b = 0; b < clustArr.size();b++)
+					{
+
+						if (std::find(clustArr[b].begin(), clustArr[b].end(), a-1)!=clustArr[b].end())
+						{
+							clustArr[b].push_back(a);
+							isMerged = true;
+							clusToMerge = b;
+							break;
+						}
+
+					}
 				}
+				if (a>=resWidth && arr[a-resWidth])
+				{
+					for(int b = 0; b < clustArr.size();b++)
+					{
+
+						if (std::find(clustArr[b].begin(), clustArr[b].end(), a-resWidth)!=clustArr[b].end() && b != clusToMerge)
+						{
+							//has this point already been merged? If so, merge existing clusters
+							
+							if (isMerged)
+							{
+								//cout << "Things are being merged!" << endl;
+								clustArr[b].insert( clustArr[b].end(), clustArr[clusToMerge].begin(), clustArr[clusToMerge].end() );
+								clustArr.erase(clustArr.begin() + clusToMerge);								
+								if (clusToMerge < b) b--;
+							}
+							else
+							{
+								clustArr[b].push_back(a);
+								isMerged = true;
+							}
+							break;
+						}
+					}
+				}
+				//if no clusters nearby, start new cluster
+				if (!isMerged)
+				{
+					vector<int> newClust;
+					newClust.push_back(a);
+					clustArr.push_back(newClust);
+				}
+				
 			//}
 		}
+	}
+	//remove any clusters that are too small
+	for(int c = clustArr.size()-1; c >= 0; c--)
+	{
+		if (clustArr[c].size() <= 10) clustArr.erase(clustArr.begin() + c);
 	}
 	return clustArr;
 
 }
 
+Rect getRectangle(vector<int> cluster)
+{
+	Rect rec;
+	rec.top = cluster[0];
+	rec.bot = cluster[0];
+	rec.left = cluster[0];
+	rec.right = cluster[0];
+	
+	for (int i=1; i<cluster.size();i++)
+	{
+		if (cluster[i]<rec.top) rec.top = cluster[i];
+		if (cluster[i]>rec.bot) rec.bot = cluster[i];
+		if (cluster[i]%resWidth<rec.left%resWidth) rec.left = cluster[i];
+		if (cluster[i]%resWidth>rec.right%resWidth) rec.right = cluster[i];
+	}
+	
+
+	rec.top /= resWidth;
+	rec.bot /= resWidth;
+	rec.left %= resWidth;
+	rec.right %= resWidth;
+
+	rec.left-=2;
+	rec.right+=2;
+	rec.top-=2;
+	rec.bot+=2;
+
+	if (rec.top<0) rec.top = 1;
+	if (rec.bot>resHeight-1) rec.bot = resHeight-1;
+	if (rec.left<0) rec.left = 1;
+	if (rec.right>resWidth-1) rec.right = resWidth-1;
+
+	cout << rec.top << " " << rec.bot << " " << rec.left << " " << rec.right  << endl;
+
+	//prevent rectangles that are deflated from appearing
+	if(rec.right-rec.left <= 3 || rec.bot-rec.top <=3)
+	{
+		rec.top = 0;
+		rec.bot = 0;
+		rec.right = 0;
+		rec.left = 0;
+		return rec;
+	}
+	
+	for(int b = 0; b < arrrect.size(); b++)
+	{
+		if (!(rec.left > arrrect[b].right || rec.right < arrrect[b].left || rec.top > arrrect[b].bot || rec.bot < arrrect[b].top))
+		{
+			if (arrrect[b].left < rec.left) rec.left = arrrect[b].left;
+			if (arrrect[b].right > rec.right) rec.right = arrrect[b].right;
+			if (arrrect[b].top >rec.top) rec.top = arrrect[b].top;
+			if (arrrect[b].bot < rec.bot) rec.bot = arrrect[b].bot;
+			arrrect.erase(arrrect.begin() + b);
+		}
+	}
+	
+	return rec;
+	
+}
+
+/*
 void populateClust(vector<int> cls, bool * ar, int seed)
 {
 
 	ar[seed] = false;
 	cls.push_back(seed);
-	if (ar[seed-1]) populateClust(cls, ar, seed-1);
-	if (ar[seed+1]) populateClust(cls, ar, seed+1);
-	if (ar[seed-640]) populateClust(cls, ar, seed-640);
-	if (ar[seed+640]) populateClust(cls, ar, seed+640);
+	if (seed%resWidth!=0 && ar[seed-1]) populateClust(cls, ar, seed-1);
+	if (seed%resWidth!=639 && ar[seed+1]) populateClust(cls, ar, seed+1);
+	if (seed >= resWidth && ar[seed-resWidth]) populateClust(cls, ar, seed-resWidth);
+	if (seed < 639*resHeight && ar[seed+resWidth]) populateClust(cls, ar, seed+resWidth);
+	cout << "plants" << endl;
 }
-
+*/
 
 
 
@@ -487,40 +621,40 @@ void takePicture(FT_WEIGHTED_RECT rec)
 {
 	NUI_LOCKED_RECT lock = getLockedRect();
 	//top line
-	for (int i = 4*(rec.Rect.top * 640 + rec.Rect.left);i<=4*(rec.Rect.top * 640 + rec.Rect.right);i+=4)
+	for (int i = 4*(rec.Rect.top * resWidth + rec.Rect.left);i<=4*(rec.Rect.top * resWidth + rec.Rect.right);i+=4)
 	{
 		lock.pBits[i] = 0;
 		lock.pBits[i+1] = 0;
-		lock.pBits[i+2] = 1000;
+		lock.pBits[i+2] = 254;
 		lock.pBits[i+3] = 0;
 	}
 	//bottom line
-	for (int i = 4*(rec.Rect.bottom * 640 + rec.Rect.left);i<=4*(rec.Rect.bottom * 640 + rec.Rect.right);i+=4)
+	for (int i = 4*(rec.Rect.bottom * resWidth + rec.Rect.left);i<=4*(rec.Rect.bottom * resWidth + rec.Rect.right);i+=4)
 	{
 		lock.pBits[i] = 0;
 		lock.pBits[i+1] = 0;
-		lock.pBits[i+2] = 1000;
+		lock.pBits[i+2] = 254;
 		lock.pBits[i+3] = 0;
 	}
 	//left line
-	for (int i = 4*(rec.Rect.top * 640 + rec.Rect.left);i<=4*(rec.Rect.bottom * 640 + rec.Rect.left);i+=(640*4))
+	for (int i = 4*(rec.Rect.top * resWidth + rec.Rect.left);i<=4*(rec.Rect.bottom * resWidth + rec.Rect.left);i+=(resWidth*4))
 	{
 		//blue
 		lock.pBits[i] = 0;
 		//green
 		lock.pBits[i+1] = 0;
 		//red
-		lock.pBits[i+2] = 1000;
-		//black/brightness?
+		lock.pBits[i+2] = 254;
+		//alpha
 		lock.pBits[i+3] = 0;
 	}
 	//right line
-	for (int i = 4*(rec.Rect.top * 640 + rec.Rect.right);i<=4*(rec.Rect.bottom * 640 + rec.Rect.right);i+=(640*4))
+	for (int i = 4*(rec.Rect.top * resWidth + rec.Rect.right);i<=4*(rec.Rect.bottom * resWidth + rec.Rect.right);i+=(resWidth*4))
 	{
 		
 		lock.pBits[i] = 0;
 		lock.pBits[i+1] = 0;
-		lock.pBits[i+2] = 1000;
+		lock.pBits[i+2] = 254;
 		lock.pBits[i+3] = 0;
 	}
 	takePicture(lock.pBits, "face");
@@ -528,28 +662,76 @@ void takePicture(FT_WEIGHTED_RECT rec)
 
 void takePicture(byte * pBits, string str)
 {
-		if (str == "last")
+		if (str == "final")
 		{
-			for(int a = 0; a<=640*480*4;a++)
+			for(int a = 0; a<resWidth*resHeight*4;a+=4)
 			{
 				
-				if ((abs(arrfst[a]-arrlst[a])+abs(arrfst[a+1]-arrlst[a+1])+abs(arrfst[a+2]-arrlst[a+2])+abs(arrfst[a+3]-arrlst[a+3])) >= 25)
-				{
-					arrdiff[a] = true;
-				}
+					if ((abs(arrfst[a]-arrlst[a])+abs(arrfst[a+1]-arrlst[a+1])+abs(arrfst[a+2]-arrlst[a+2])+abs(arrfst[a+3]-arrlst[a+3])) >= 40)
+					{
+						//cout << "Things are true"  << endl;
+						arrdiff[a/4] = true;
+					}
+					else
+					{
+						arrdiff[a/4] = false;
+					}
 				
-				pBits[a] = (int)(arrfirst[a]+arrlast[a]);
+				
 			}
+
+			
+			
 			vector<vector<int>> clusters = getClusters(arrdiff);
+			cout << "Number of clusters: " << clusters.size() << endl;
+			
 			for(int b = 0; b < clusters.size();b++)
 			{
-				for (int c = 0; c < clusters[b].size(); c++)
+				cout << "Cluster size: " << clusters[b].size() << endl;
+				arrrect.push_back(getRectangle(clusters[b]));
+				
+			}
+			for(int b = 0; b < arrrect.size();b++)
+			{
+				Rect rec = arrrect[b];
+				for (int i = 4*(rec.top * resWidth + rec.left);i<=4*(rec.top * resWidth + rec.right);i+=4)
 				{
-					pBits[clusters[b][c]*4] = 255;
-					pBits[clusters[b][c]*4+1] = 0;
-					pBits[clusters[b][c]*4+2] = 0;
+					pBits[i] = 0;
+					pBits[i+1] = 0;
+					pBits[i+2] = 254;
+					pBits[i+3] = 0;
+				}
+				//bottom line
+				for (int i = 4*(rec.bot * resWidth + rec.left);i<=4*(rec.bot * resWidth + rec.right);i+=4)
+				{
+					pBits[i] = 0;
+					pBits[i+1] = 0;
+					pBits[i+2] = 254;
+					pBits[i+3] = 0;
+				}
+				//left line
+				for (int i = 4*(rec.top * resWidth + rec.left);i<=4*(rec.bot * resWidth + rec.left);i+=(resWidth*4))
+				{
+					//blue
+					pBits[i] = 0;
+					//green
+					pBits[i+1] = 0;
+					//red
+					pBits[i+2] = 254;
+					//alpha
+					pBits[i+3] = 0;
+				}
+				//right line
+				for (int i = 4*(rec.top * resWidth + rec.right);i<=4*(rec.bot * resWidth + rec.right);i+=(resWidth*4))
+				{
+		
+					pBits[i] = 0;
+					pBits[i+1] = 0;
+					pBits[i+2] = 254;
+					pBits[i+3] = 0;
 				}
 			}
+			
 		}
 		//char* filename = filename = "test.bmp";
 	    //FILE *pFile = fopen(filename, "wb");
@@ -560,8 +742,8 @@ void takePicture(byte * pBits, string str)
         BMIH.biPlanes = 1;
         BMIH.biCompression = BI_RGB;
 		//1280, 960
-        BMIH.biWidth = 640;
-        BMIH.biHeight = -480;
+        BMIH.biWidth = resWidth;
+        BMIH.biHeight = -resHeight;
         //BMIH.biSizeImage = ((((BMIH.biWidth * BMIH.biBitCount)  + 31) & ~31) >> 3) * BMIH.biHeight;
         BMIH.biSizeImage = BMIH.biWidth*(-BMIH.biHeight*BMIH.biBitCount/8);
 
@@ -613,7 +795,7 @@ void takePicture(byte * pBits, string str)
     }
     
     // Write the RGB Data
-    if ( !WriteFile(hFile, static_cast<BYTE *>(pBits), BMIH.biSizeImage, &dwBytesWritten, NULL) )
+    if ( !WriteFile(hFile, static_cast <BYTE*> ( pBits), BMIH.biSizeImage, &dwBytesWritten, NULL) )
     {
         CloseHandle(hFile);
         cout << E_FAIL << endl;
@@ -623,7 +805,16 @@ void takePicture(byte * pBits, string str)
 
 		bool bError = false;
 		
-		/*
+		
+	if (str == "final")
+	{
+		sendPicture(s);
+	}
+}
+
+void sendPicture(string filename)
+{
+	bool bError = false;
 	try
 	{
 		CSmtp mail;
@@ -667,7 +858,7 @@ void takePicture(byte * pBits, string str)
 		mail.AddMsgLine("Kinect Security System.");
 
 		
-		const char * c = s.c_str();
+		const char * c = filename.c_str();
 
 		cout << c << endl;
 
@@ -688,7 +879,6 @@ void takePicture(byte * pBits, string str)
 	}
 	if(!bError)
 		std::cout << "Mail was sent successfully.\n";
-	*/
 	
 }
 
